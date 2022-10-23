@@ -1,11 +1,17 @@
 import 'dart:io';
 
+import 'package:animate_do/animate_do.dart';
+import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:media_blade/models/enums/media_types.dart';
 import 'package:media_blade/models/media_results.dart';
+import 'package:media_blade/utils/common_helper.dart';
+import 'package:media_blade/utils/file_system_helper.dart';
+import 'package:media_blade/utils/settings_helper.dart';
 import 'package:media_blade/utils/ytdl_helper.dart';
 import 'package:toast/toast.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 
 class DownloadDialog extends StatefulWidget {
   final String? url;
@@ -13,8 +19,8 @@ class DownloadDialog extends StatefulWidget {
   static show(BuildContext context, String url) {
     showModalBottomSheet(
         context: context,
-        isScrollControlled: true,
         backgroundColor: Colors.transparent,
+        isScrollControlled: true,
         builder: (context) => DownloadDialog(
               url: url,
             ));
@@ -27,56 +33,74 @@ class DownloadDialog extends StatefulWidget {
 class _DownloadDialogState extends State<DownloadDialog> {
   MediaResults? results;
   int selectedTab = 0;
-  final mediaTypes = ['image', 'video', 'audio'];
+  var mappedFormats = Map<String, List<Formats>>();
+  Map<String, IconData> icons = {
+    'video': Icons.video_collection_rounded,
+    'audio': Icons.audiotrack,
+    'image': Icons.image,
+  };
+
+  MediaTypes getFormatType(Formats format) {
+    if (format.acodec == 'none' && format.vcodec == 'none') {
+      return MediaTypes.image;
+    }
+    if (format.acodec != 'none' && format.vcodec != 'none') {
+      return MediaTypes.video;
+    }
+    if (format.acodec != 'none' && format.vcodec == 'none') {
+      return MediaTypes.audio;
+    }
+    return MediaTypes.undefined;
+  }
 
   void fetchResults() async {
     try {
       var res = await YtdlHelper.getMediaResults(widget.url ?? '');
+      mappedFormats.clear();
+        if((res.formats??[]).isEmpty){
+        throw Exception("Failed");
+      }
+      res.formats?.forEach((format) {
+        var type = getFormatType(format);
+        if (type != MediaTypes.undefined) {
+          var formatsArray = mappedFormats[type.name] ?? [];
+          mappedFormats[type.name] = [...formatsArray, format];
+        }
+      });
+    
       setState(() {
+        mappedFormats;
         results = res;
       });
     } on Exception catch (err) {
-      print(err.toString());
-      //Navigator.pop(context);
-      Toast.show("Failed to retrieve the content");
-    }
-  }
+      Toast.show("Failed to retrieve the content",
+          duration: Toast.lengthLong, gravity: Toast.bottom);
 
-  List<Formats> getSelectedMedia({String? type}) {
-    type ??= mediaTypes[selectedTab];
-    if (results != null) {
-      return results?.formats?.where((element) {
-            switch (type) {
-              case 'image':
-                return element.acodec == 'none' && element.vcodec == 'none';
-              case 'video':
-                return element.acodec != 'none' && element.vcodec != 'none';
-              case 'audio':
-                return element.acodec != 'none' && element.vcodec == 'none';
-              default:
-                return false;
-            }
-          }).toList() ??
-          [];
+      Navigator.pop(context);
     }
-    return [];
   }
 
   void startDownload(Formats format) async {
     var title = results?.title ?? "";
     var extension = results?.ext ?? "";
+    var path = await SettingsHelper.getSetting(SettingKey.downloadPath);
+    if (path == null) {
+      path = await FileSystemHelper.requestNewPath(context);
+      await SettingsHelper.setSetting(SettingKey.downloadPath, path);
+    }
+    if (path == null) {
+      return;
+    }
     try {
-     
       FlutterDownloader.enqueue(
         url: format.url ?? '',
-        savedDir: '/storage/emulated/0/Download',
+        savedDir: path,
         saveInPublicStorage: true,
         fileName: "$title.$extension",
         showNotification: true,
         openFileFromNotification: true,
       );
-       Toast.show("Download started");
-      
+      Toast.show("Download started");
     } on Exception catch (err) {
       Toast.show("Failed to download file");
     }
@@ -86,139 +110,163 @@ class _DownloadDialogState extends State<DownloadDialog> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    ToastContext().init(context);
     fetchResults();
   }
 
-  Widget buildFormats() {
-    var selectedMedia = getSelectedMedia();
-    const icons = [
-      Icon(Icons.image),
-      Icon(Icons.video_library_sharp),
-      Icon(Icons.audio_file)
-    ];
-    return Column(children: [
-      DefaultTabController(
-          length: 3,
-          child: TabBar(
-            onTap: (tabIndex) {
-              setState(() {
-                selectedTab = tabIndex;
-              });
-            },
-            tabs: icons.map((e) {
-              return Tab(
-                icon: e,
-              );
-            }).toList(),
-          )),
-      Container(
-        height: 60,
-        child: ListView.builder(
-          itemCount: selectedMedia.length,
-          scrollDirection: Axis.horizontal,
-          itemBuilder: (context, index) {
-            var format = selectedMedia[index];
-            var title = "[${format.ext}] ${format.format}";
-            return Container(
-              margin: EdgeInsets.only(right: 10, top: 15),
-              child: InkWell(
-                  onTap: () {
-                    startDownload(format);
-                  },
-                  child: Chip(
-                    avatar: CircleAvatar(
-                      foregroundColor: Colors.blue,
-                      child: icons[selectedTab],
-                    ),
-                    label: Text(title),
-                  )),
-            );
-          },
+  Widget buildMediaInfo() {
+    return Row(
+      children: [
+        Image.network(
+          results?.thumbnail ?? '',
+          height: 45,
+          width: 45,
         ),
-      )
-    ]);
+        SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                results?.title ?? '',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                "${results?.webpageUrl}",
+                style: TextStyle(color: Colors.white, fontSize: 10),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
-  List<Widget> buildContent() {
+  Widget buildFormatsTabBar() {
+    return mappedFormats.isNotEmpty
+        ? DefaultTabController(
+            length: mappedFormats.keys.length,
+            child: TabBar(
+              onTap: (tabIndex) {
+                setState(() {
+                  selectedTab = tabIndex;
+                });
+              },
+              tabs: mappedFormats.keys.map((e) {
+                return Tab(
+                  icon: Icon(icons[e]),
+                );
+              }).toList(),
+            ))
+        : Container();
+  }
+
+  Widget buildFormatsList({ScrollController? scrollController}) {
+    var selectedMediaType = mappedFormats.keys.toList()[selectedTab];
+    var selectedMedia = mappedFormats[selectedMediaType] ?? [];
+    return Expanded(
+      child: ListView.builder(
+        itemCount: selectedMedia.length,
+        scrollDirection: Axis.vertical,
+        controller: scrollController,
+        itemBuilder: (context, index) {
+          var format = selectedMedia[index];
+          var title = "${format.format}";
+          if (title.contains('-')) {
+            title = title.split('-')[1].trim();
+          }
+          var size = format.filesize ?? format.filesizeApprox ?? 0;
+          var formattedSize = CommonHelper().formatBytes(size, 2); 
+          var icon = icons[selectedMediaType];
+          return ListTile(
+            leading: Icon(icon ?? Icons.abc, color: Colors.white, size: 40),
+            title: Text(
+              title,
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500),
+            ),
+            subtitle: Text(
+              "${format.ext}  ${formattedSize}" ,
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500),
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                    onPressed: () => {startDownload(format)},
+                    icon: Icon(
+                      Icons.download,
+                      color: Colors.white,
+                    )),
+                IconButton(
+                    onPressed: () => {launchUrl(Uri.parse(format.url ?? ''))},
+                    icon: Icon(
+                      Icons.open_in_new,
+                      color: Colors.white,
+                    )),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  List<Widget> buildContent({ScrollController? scrollController}) {
     if (results == null) {
       return [
-        Center(
-          child: Container( margin: EdgeInsets.all(10),child: CircularProgressIndicator()),
+        Expanded(
+          child: Center(
+            child: Container(
+                margin: EdgeInsets.all(10), child: CircularProgressIndicator()),
+          ),
         )
       ];
     }
     return [
-      Row(
-        children: [
-          Image.network(
-            results?.thumbnail ?? '',
-            height: 96,
-            width: 96,
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    results?.title ?? '',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    "${results?.description}",
-                    style: TextStyle(color: Colors.blue[700]),
-                  ),
-                ],
-                mainAxisSize: MainAxisSize.min),
-          ),
-        ],
-      ),
-      buildFormats()
-      //  Row(
-      //   mainAxisSize: MainAxisSize.min,
-      //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //   children: [
-      //     SizedBox(
-      //       width: 12,
-      //     ),
-      //     IconButton(
-      //       onPressed: handleShare,
-      //       icon: Icon(
-      //         Icons.share,
-      //         size: _iconsSize,
-      //       ),
-      //       color: Colors.green,
-      //     ),
-      //   ],
-      // )
+      buildMediaInfo(),
+      Container(margin: EdgeInsets.only(top: 10), child: buildFormatsTabBar()),
+      buildFormatsList(scrollController: scrollController)
     ];
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-          color: Colors.grey[900],
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20.0), topRight: Radius.circular(20.0))),
-      child: Padding(
-        padding: const EdgeInsets.all(18.0),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(
-            width: 80,
-            height: 2,
-            color: Colors.blue,
-            margin: EdgeInsets.only(bottom: 10),
-          ),
-          ...buildContent(),
-        ]),
-      ),
+    return DraggableScrollableSheet(
+      initialChildSize: 0.43,
+      minChildSize: 0.2,
+      maxChildSize: 0.75,
+      builder: (ctx, controller) {
+        return Container(
+          padding: EdgeInsets.all(10),
+          decoration: BoxDecoration(
+              color: Colors.grey[900],
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20.0),
+                  topRight: Radius.circular(20.0))),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Container(
+              width: 80,
+              height: 2,
+              color: Colors.blue,
+              margin: EdgeInsets.only(bottom: 20),
+            ),
+            ...buildContent(scrollController: controller),
+          ]),
+        );
+      },
     );
   }
 }

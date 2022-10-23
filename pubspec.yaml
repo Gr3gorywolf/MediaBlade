@@ -34,6 +34,9 @@ dependencies:
   permission_handler: 10.2.0
   flutter_downloader: 1.8.4
   shared_preferences: 2.0.15
+  filesystem_picker: ^3.1.0
+  url_launcher: ^6.1.6
+  package_info_plus: ^3.0.1
   flutter:
     sdk: flutter
 

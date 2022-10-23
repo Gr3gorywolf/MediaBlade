@@ -42,10 +42,7 @@ class _MainPageState extends State<MainPage> {
   List<Widget> routes = [HomePage(), SettingsPage()];
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text("MediaBlade"),
-        ),
+    return Scaffold( 
         body: routes[_currentIndex],
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
