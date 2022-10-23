@@ -8,7 +8,7 @@
 PRODUCT_NAME = media_blade
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.mediaBlade
+PRODUCT_BUNDLE_IDENTIFIER = com.gr3.mediaBlade
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2022 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2022 com.gr3. All rights reserved.

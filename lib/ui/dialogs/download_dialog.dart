@@ -178,10 +178,7 @@ class _DownloadDialogState extends State<DownloadDialog> {
         controller: scrollController,
         itemBuilder: (context, index) {
           var format = selectedMedia[index];
-          var title = "${format.format}";
-          if (title.contains('-')) {
-            title = title.split('-')[1].trim();
-          }
+          var title = format.format ?? '';
           var size = format.filesize ?? format.filesizeApprox ?? 0;
           var formattedSize = CommonHelper().formatBytes(size, 2); 
           var icon = icons[selectedMediaType];
