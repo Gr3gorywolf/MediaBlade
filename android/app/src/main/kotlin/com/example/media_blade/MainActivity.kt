@@ -1,4 +1,4 @@
-package com.example.media_blade
+package com.gr3apps.media_blade
 
 import android.content.Intent
 import android.widget.Toast
