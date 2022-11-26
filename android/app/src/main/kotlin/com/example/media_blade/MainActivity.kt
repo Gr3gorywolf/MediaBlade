@@ -1,6 +1,9 @@
 package com.gr3.media_blade
 
 import android.content.Intent
+import android.os.Bundle
+import android.os.PersistableBundle
+import android.webkit.URLUtil
 import android.widget.Toast
 import androidx.annotation.NonNull
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -15,8 +18,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.webkit.URLUtil
-import java.util.ArrayList
 import java.util.regex.Pattern
 
 class MainActivity: FlutterActivity() {
@@ -78,7 +79,6 @@ class MainActivity: FlutterActivity() {
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         this.engine = flutterEngine;
-
         handleIntent(this.intent);
         sendNewIntent();
 
@@ -90,7 +90,14 @@ class MainActivity: FlutterActivity() {
                         withContext(Dispatchers.IO) {
                             val url = call.argument<String>("url")
                             Log.i("YTDL", "RESULTS_FETCHING")
-                            val streamInfo: VideoInfo = YoutubeDL.getInstance().getInfo(url)
+                            val request = YoutubeDLRequest(url)
+                            if (call.hasArgument("params")) {
+                                val options = call.argument<HashMap<String, String>>("params")
+                                options?.forEach { entry ->
+                                    request.addOption(entry.key, entry.value);
+                                }
+                            }
+                            val streamInfo: VideoInfo = YoutubeDL.getInstance().getInfo(request)
                             val title = streamInfo.getTitle()
                             Log.i("YTDL", "RESULTS_FETCHED")
                             val mapper = ObjectMapper()
@@ -104,6 +111,18 @@ class MainActivity: FlutterActivity() {
             } else if (call.method == "getIntentUrl") {
                 result.success(this.IntentUrl);
                 this.IntentUrl = null;
+            } else if (call.method == "upgrade") {
+                GlobalScope.launch {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            YoutubeDL.getInstance().updateYoutubeDL(applicationContext)
+                            result.success("upgraded sucessfully")
+                        }
+                    } catch (e: Exception) {
+                        Log.i("YTDL", "UPGRADING_FAILED")
+                        result.error("ERROR", e.message, null)
+                    }
+                }
             } else {
                 result.notImplemented()
             }
@@ -123,4 +142,6 @@ class MainActivity: FlutterActivity() {
             }
         }
     }
+
+
 }

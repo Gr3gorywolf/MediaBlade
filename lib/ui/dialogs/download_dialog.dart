@@ -57,7 +57,7 @@ class _DownloadDialogState extends State<DownloadDialog> {
     try {
       var res = await YtdlHelper.getMediaResults(widget.url ?? '');
       mappedFormats.clear();
-        if((res.formats??[]).isEmpty){
+      if ((res.formats ?? []).isEmpty) {
         throw Exception("Failed");
       }
       res.formats?.forEach((format) {
@@ -67,12 +67,12 @@ class _DownloadDialogState extends State<DownloadDialog> {
           mappedFormats[type.name] = [...formatsArray, format];
         }
       });
-    
       setState(() {
         mappedFormats;
         results = res;
       });
     } on Exception catch (err) {
+      print(err.toString());
       Toast.show("Failed to retrieve the content",
           duration: Toast.lengthLong, gravity: Toast.bottom);
 
@@ -180,7 +180,7 @@ class _DownloadDialogState extends State<DownloadDialog> {
           var format = selectedMedia[index];
           var title = format.format ?? '';
           var size = format.filesize ?? format.filesizeApprox ?? 0;
-          var formattedSize = CommonHelper().formatBytes(size, 2); 
+          var formattedSize = CommonHelper().formatBytes(size, 2);
           var icon = icons[selectedMediaType];
           return ListTile(
             leading: Icon(icon ?? Icons.abc, color: Colors.white, size: 40),
@@ -192,7 +192,7 @@ class _DownloadDialogState extends State<DownloadDialog> {
                   fontWeight: FontWeight.w500),
             ),
             subtitle: Text(
-              "${format.ext}  ${formattedSize}" ,
+              "${format.ext}  ${formattedSize}",
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 12,

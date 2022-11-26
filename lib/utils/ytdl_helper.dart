@@ -18,10 +18,14 @@ class YtdlHelper {
     _listener = listener;
   }
 
-  static Future<MediaResults> getMediaResults(String url) async {
+  static Future<MediaResults> getMediaResults(String url,
+      {Map<String, String>? options}) async {
     try {
-      var result =
-          await _platform.invokeMethod('getVideoResults', {'url': url});
+      Map<String, dynamic> args = {'url': url};
+      if (options != null) {
+        args['params'] = options;
+      }
+      var result = await _platform.invokeMethod('getVideoResults', args);
       var data = jsonDecode(result);
       return MediaResults.fromJson(data);
     } on PlatformException catch (e) {
@@ -29,6 +33,15 @@ class YtdlHelper {
     }
   }
 
+
+  static Future<void> upgradeYTDL() async {
+    try {
+      var result = await _platform.invokeMethod('upgrade');
+      return result;
+    } on PlatformException catch (e) {
+      throw Exception("Failed to upgrade YTDL");
+    }
+  }
   static Future<String?> getIntentUrl() async {
     try {
       var result = await _platform.invokeMethod('getIntentUrl');

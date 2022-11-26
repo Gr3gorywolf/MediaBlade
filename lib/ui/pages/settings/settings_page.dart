@@ -3,7 +3,9 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:media_blade/utils/file_system_helper.dart';
 import 'package:media_blade/utils/settings_helper.dart';
+import 'package:media_blade/utils/ytdl_helper.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:toast/toast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -16,6 +18,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   var downloadUrl = "";
   var version = "";
+  var isUpgrading = false;
 
   var titleTextStyle = TextStyle(color: Colors.white, fontSize: 12);
   var subTitleTextStyle = TextStyle(color: Colors.white, fontSize: 10);
@@ -39,10 +42,27 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  void upgradeExtractor() async {
+    if (isUpgrading) return;
+    setState(() {
+      isUpgrading = true;
+    });
+    try {
+      await YtdlHelper.upgradeYTDL();
+    } catch (err) {
+      Toast.show("Failed to upgrade the extractor",
+          duration: Toast.lengthLong, gravity: Toast.bottom);
+    }
+    setState(() {
+      isUpgrading = false;
+    });
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    ToastContext().init(context);
     init();
   }
 
@@ -97,6 +117,30 @@ class _SettingsPageState extends State<SettingsPage> {
               trailing: Icon(
                 Icons.open_in_new,
                 color: Colors.white,
+              ),
+            ),
+            Divider(
+              height: 2,
+              color: Colors.white24,
+            ),
+            ListTile(
+              onTap: () {
+                upgradeExtractor();
+              },
+              leading: isUpgrading
+                  ? CircularProgressIndicator()
+                  : Icon(
+                      Icons.upgrade,
+                      size: 35,
+                      color: Colors.white,
+                    ),
+              title: Text(
+                "Upgrade extractor",
+                style: titleTextStyle,
+              ),
+              subtitle: Text(
+                "Upgrades the extractor to the latest version",
+                style: subTitleTextStyle,
               ),
             ),
             Divider(
