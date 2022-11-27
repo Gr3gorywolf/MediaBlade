@@ -178,8 +178,14 @@ class _DownloadDialogState extends State<DownloadDialog> {
         controller: scrollController,
         itemBuilder: (context, index) {
           var format = selectedMedia[index];
-          var title = format.format ?? '';
-          var size = format.filesize ?? format.filesizeApprox ?? 0;
+          var title = format.format ?? ''; 
+          var size = 0;
+          if((format.filesize ?? 0) > 0){
+              size = format.filesize ?? 0;
+          }
+          if((format.filesizeApprox ?? 0) > 0){
+              size = format.filesize ?? 0;
+          }
           var formattedSize = CommonHelper().formatBytes(size, 2);
           var icon = icons[selectedMediaType];
           return ListTile(
