@@ -5,8 +5,10 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:media_blade/ui/pages/whatsapp_status_extractor/whatsapp_status_extractor_details_page.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:toast/toast.dart';
 
+import '../../../utils/alerts_helper.dart';
 import '../../../utils/file_system_helper.dart';
 import '../../../utils/settings_helper.dart';
 import '../../widgets/video_preview.dart';
@@ -24,10 +26,47 @@ class _WhatsappStatusExtractorPageState
   var isLoading = false;
   var files = [];
 
-  void fetchWhatsappCache() async {
+  Future<bool> requestManageStoragePermission() async {
+    var status = await Permission.manageExternalStorage.status;
+    if (!status.isGranted) {
+      // ignore: use_build_context_synchronously
+      AlertsHelper.showAlertDialog(context, "Warning",
+          "The Watsapp's statuses folder are hidden so you have to grant the manage storage permission to proceed",
+          buttons: [
+            TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  "Cancel",
+                  style: TextStyle(color: Colors.red),
+                )),
+            TextButton(
+                onPressed: () {
+                  Permission.manageExternalStorage.request().then((value) {
+                    if (value == PermissionStatus.granted) {
+                      fetchWhatsappCache();
+                    }
+                    Navigator.pop(context);
+                  });
+                },
+                child: const Text("Grant"))
+          ]);
+      return false;
+    }
+    return true;
+  }
+
+  Future<void> fetchWhatsappCache() async {
     setState(() {
       isLoading = true;
     });
+    if (!await requestManageStoragePermission()) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
     final dir = Directory(
         '/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Media/.Statuses');
     if (dir.existsSync()) {
@@ -93,20 +132,23 @@ class _WhatsappStatusExtractorPageState
           ? Center(
               child: CircularProgressIndicator(),
             )
-          : GridView.count(
-              crossAxisCount: 2,
-              childAspectRatio: 9 / 11,
-              children: List.generate(
-                files.length,
-                (index) {
-                  return InkWell(
-                      onTap: () => goToDetails(files[index]),
-                      child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: buildImage(files[index]))));
-                },
+          : RefreshIndicator(
+              onRefresh: fetchWhatsappCache,
+              child: GridView.count(
+                crossAxisCount: 2,
+                childAspectRatio: 9 / 11,
+                children: List.generate(
+                  files.length,
+                  (index) {
+                    return InkWell(
+                        onTap: () => goToDetails(files[index]),
+                        child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: buildImage(files[index]))));
+                  },
+                ),
               ),
             ),
     );
