@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:animate_do/animate_do.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:media_blade/models/enums/media_types.dart';
 import 'package:media_blade/models/media_results.dart';
@@ -15,14 +16,16 @@ import 'package:url_launcher/url_launcher.dart';
 
 class DownloadDialog extends StatefulWidget {
   final String? url;
-  const DownloadDialog({super.key, this.url});
-  static show(BuildContext context, String url) {
+  final bool fromIntent;
+  const DownloadDialog({super.key, this.url, this.fromIntent = false});
+  static show(BuildContext context, String url, {bool fromIntent = false}) {
     showModalBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
         isScrollControlled: true,
         builder: (context) => DownloadDialog(
               url: url,
+              fromIntent: fromIntent,
             ));
   }
 
@@ -91,6 +94,9 @@ class _DownloadDialogState extends State<DownloadDialog> {
     if (path == null) {
       return;
     }
+    var closeIfIntent =
+        await SettingsHelper.getSetting(SettingKey.closeIfIntent) == 'true' ??
+            false;
     try {
       FlutterDownloader.enqueue(
         url: format.url ?? '',
@@ -101,6 +107,10 @@ class _DownloadDialogState extends State<DownloadDialog> {
         openFileFromNotification: true,
       );
       Toast.show("Download started");
+      print({closeIfIntent, widget.fromIntent});
+      if (closeIfIntent && widget.fromIntent) {
+        await SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+      }
     } on Exception catch (err) {
       Toast.show("Failed to download file");
     }
@@ -178,13 +188,13 @@ class _DownloadDialogState extends State<DownloadDialog> {
         controller: scrollController,
         itemBuilder: (context, index) {
           var format = selectedMedia[index];
-          var title = format.format ?? ''; 
+          var title = format.format ?? '';
           var size = 0;
-          if((format.filesize ?? 0) > 0){
-              size = format.filesize ?? 0;
+          if ((format.filesize ?? 0) > 0) {
+            size = format.filesize ?? 0;
           }
-          if((format.filesizeApprox ?? 0) > 0){
-              size = format.filesize ?? 0;
+          if ((format.filesizeApprox ?? 0) > 0) {
+            size = format.filesize ?? 0;
           }
           var formattedSize = CommonHelper().formatBytes(size, 2);
           var icon = icons[selectedMediaType];

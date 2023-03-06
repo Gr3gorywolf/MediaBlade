@@ -19,16 +19,21 @@ class _SettingsPageState extends State<SettingsPage> {
   var downloadUrl = "";
   var version = "";
   var isUpgrading = false;
+  var closeIfIntentEnabled = false;
 
   var titleTextStyle = TextStyle(color: Colors.white, fontSize: 12);
   var subTitleTextStyle = TextStyle(color: Colors.white, fontSize: 10);
   void init() async {
     var settedUrl =
         await SettingsHelper.getSetting(SettingKey.downloadPath) ?? "Not set";
+    var closeIfIntent =
+        await SettingsHelper.getSetting(SettingKey.closeIfIntent) == 'true' ??
+            false;
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     setState(() {
       version = packageInfo.version;
       downloadUrl = settedUrl;
+      closeIfIntentEnabled = closeIfIntent;
     });
   }
 
@@ -49,12 +54,23 @@ class _SettingsPageState extends State<SettingsPage> {
     });
     try {
       await YtdlHelper.upgradeYTDL();
+      Toast.show("Extractor upgraded successfully!",
+          duration: Toast.lengthLong, gravity: Toast.bottom);
     } catch (err) {
       Toast.show("Failed to upgrade the extractor",
           duration: Toast.lengthLong, gravity: Toast.bottom);
     }
     setState(() {
       isUpgrading = false;
+    });
+  }
+
+  void toggleCloseIfIntent() async {
+    var newVal = !closeIfIntentEnabled;
+    await SettingsHelper.setSetting(
+        SettingKey.closeIfIntent, newVal.toString());
+    setState(() {
+      closeIfIntentEnabled = newVal;
     });
   }
 
@@ -98,26 +114,24 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             ListTile(
               onTap: () {
-                launchUrl(
-                    Uri.parse("https://github.com/Gr3gorywolf/MediaBlade"));
+                selectNewPath();
               },
               leading: Icon(
-                Icons.code,
+                Icons.clear_all,
                 size: 35,
                 color: Colors.white,
               ),
               title: Text(
-                "Source code",
+                "Close after download",
                 style: titleTextStyle,
               ),
               subtitle: Text(
-                "https://github.com/Gr3gorywolf/MediaBlade",
+                "Closes the app when was opened from a external app once you hit a download option",
                 style: subTitleTextStyle,
               ),
-              trailing: Icon(
-                Icons.open_in_new,
-                color: Colors.white,
-              ),
+              trailing: Switch(
+                  value: closeIfIntentEnabled,
+                  onChanged: (newVal) => toggleCloseIfIntent()),
             ),
             Divider(
               height: 2,
@@ -141,6 +155,33 @@ class _SettingsPageState extends State<SettingsPage> {
               subtitle: Text(
                 "Upgrades the extractor to the latest version",
                 style: subTitleTextStyle,
+              ),
+            ),
+            Divider(
+              height: 2,
+              color: Colors.white24,
+            ),
+            ListTile(
+              onTap: () {
+                launchUrl(
+                    Uri.parse("https://github.com/Gr3gorywolf/MediaBlade"));
+              },
+              leading: Icon(
+                Icons.code,
+                size: 35,
+                color: Colors.white,
+              ),
+              title: Text(
+                "Source code",
+                style: titleTextStyle,
+              ),
+              subtitle: Text(
+                "https://github.com/Gr3gorywolf/MediaBlade",
+                style: subTitleTextStyle,
+              ),
+              trailing: Icon(
+                Icons.open_in_new,
+                color: Colors.white,
               ),
             ),
             Divider(

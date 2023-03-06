@@ -39,9 +39,11 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
     if (status.isPermanentlyDenied || status.isDenied) {
       Map<Permission, PermissionStatus> statuses = await [
         Permission.storage,
+        Permission.manageExternalStorage
       ].request();
-      var status = statuses[Permission.storage];
-      if (status != null && !status.isGranted) {
+      if (statuses[Permission.storage] == PermissionStatus.granted &&
+          statuses[Permission.manageExternalStorage] ==
+              PermissionStatus.granted) {
         return;
       }
     }
@@ -49,7 +51,7 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
 
   Future initPlugins() async {
     WidgetsFlutterBinding.ensureInitialized();
-    await FlutterDownloader.initialize(debug: true); 
+    await FlutterDownloader.initialize(debug: true);
     await initFS();
     YtdlHelper.init();
   }

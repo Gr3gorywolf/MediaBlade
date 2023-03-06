@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:media_blade/ui/dialogs/download_dialog.dart';
 import 'package:media_blade/ui/pages/home/home_page.dart';
 import 'package:media_blade/ui/pages/settings/settings_page.dart';
+import 'package:media_blade/ui/pages/tools/tools_page.dart';
 import 'package:media_blade/utils/ytdl_helper.dart';
 
 class MainPage extends StatefulWidget {
@@ -17,8 +18,7 @@ class _MainPageState extends State<MainPage> {
 
   void handleUrlReceived(String? receivedUrl) {
     if (receivedUrl != null) {
-      print(receivedUrl);
-      DownloadDialog.show(context, receivedUrl);
+      DownloadDialog.show(context, receivedUrl, fromIntent: true);
     }
   }
 
@@ -39,10 +39,10 @@ class _MainPageState extends State<MainPage> {
     retrieveUrl();
   }
 
-  List<Widget> routes = [HomePage(), SettingsPage()];
+  List<Widget> routes = [HomePage(), ToolsPage(), SettingsPage()];
   @override
   Widget build(BuildContext context) {
-    return Scaffold( 
+    return Scaffold(
         body: routes[_currentIndex],
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
@@ -53,6 +53,10 @@ class _MainPageState extends State<MainPage> {
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
               label: "Home",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.handyman),
+              label: "Tools",
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings),
