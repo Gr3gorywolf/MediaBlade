@@ -90,7 +90,8 @@ class MainActivity: FlutterActivity() {
                         withContext(Dispatchers.IO) {
                             val url = call.argument<String>("url")
                             Log.i("YTDL", "RESULTS_FETCHING")
-                            val request = YoutubeDLRequest(url)
+                            if(url != null){
+                            val request = YoutubeDLRequest(url);
                             if (call.hasArgument("params")) {
                                 val options = call.argument<HashMap<String, String>>("params")
                                 options?.forEach { entry ->
@@ -98,10 +99,10 @@ class MainActivity: FlutterActivity() {
                                 }
                             }
                             val streamInfo: VideoInfo = YoutubeDL.getInstance().getInfo(request)
-                            val title = streamInfo.getTitle()
                             Log.i("YTDL", "RESULTS_FETCHED")
                             val mapper = ObjectMapper()
                             result.success(mapper.writeValueAsString(streamInfo))
+                            }
                         }
                     } catch (e: Exception) {
                         Log.i("YTDL", "RESULTS_FETCHING_FAILED")

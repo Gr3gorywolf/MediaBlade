@@ -74,7 +74,7 @@ flutter {
 
 dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "2.9.8"
-    implementation "com.github.yausername.youtubedl-android:library:23b26d55f838626bc63e2b4964d97062a5e46e50"
+    implementation "com.github.yausername.youtubedl-android:library:-SNAPSHOT"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
 }
