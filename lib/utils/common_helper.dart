@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'dart:math';
 
 class CommonHelper {
@@ -8,5 +10,9 @@ class CommonHelper {
     return ((bytes / pow(1024, i)).toStringAsFixed(decimals)) +
         ' ' +
         suffixes[i];
+  }
+
+  String createHash(String input) {
+    return sha256.convert(utf8.encode(input)).toString().substring(0, 5);
   }
 }

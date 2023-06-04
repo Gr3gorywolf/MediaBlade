@@ -86,6 +86,7 @@ class _DownloadDialogState extends State<DownloadDialog> {
   void startDownload(Formats format) async {
     var title = results?.title ?? "";
     var extension = results?.ext ?? "";
+    var hash = CommonHelper().createHash(results?.url ?? "");
     var path = await SettingsHelper.getSetting(SettingKey.downloadPath);
     if (path == null) {
       path = await FileSystemHelper.requestNewPath(context);
@@ -102,7 +103,7 @@ class _DownloadDialogState extends State<DownloadDialog> {
         url: format.url ?? '',
         savedDir: path,
         saveInPublicStorage: true,
-        fileName: "$title.$extension",
+        fileName: "$title-$hash.$extension",
         showNotification: true,
         openFileFromNotification: true,
       );
