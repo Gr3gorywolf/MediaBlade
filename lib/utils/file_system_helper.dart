@@ -10,10 +10,11 @@ class FileSystemHelper {
     try {
       var appDirectory = Directory(app_directory_url);
       if (!appDirectory.existsSync()) {
-        await appDirectory.create();
+        await appDirectory.create(recursive: true);
       }
       return true;
     } catch (err) {
+      print(err);
       return false;
     }
   }

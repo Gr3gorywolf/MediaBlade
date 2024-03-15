@@ -33,7 +33,7 @@ class _HistoryPageState extends State<HistoryPage> {
         DownloadDialog.show(context, registry.webpageUrl);
         break;
       case 'view':
-        Get.to(HistoryElementDetailsPage(
+        Get.to(() => HistoryElementDetailsPage(
             File.fromUri(Uri.parse(registry.fileUrl))));
         break;
       case 'open':
@@ -53,82 +53,77 @@ class _HistoryPageState extends State<HistoryPage> {
     );
     var isFromWsp = registry.image ==
         CommonHelper().getWebpageFavicon("https://web.whatsapp.com");
-    return Expanded(
-      child: Stack(fit: StackFit.expand, children: [
-        children,
-        Expanded(
-          child: Container(
-            color:
-                Colors.black.withOpacity(0.5), // Semi-transparent black color
-            alignment: Alignment.center, // Center the content
-          ),
+    return Stack(fit: StackFit.expand, children: [
+      children,
+      Positioned.fill(
+        child: Container(
+          color: Colors.black.withOpacity(0.5), // Semi-transparent black color
+          alignment: Alignment.center, // Center the content
         ),
-        registry.type == "video" && fileExists
-            ? Center(
-                child: Icon(Icons.play_arrow, size: 50),
-              )
-            : Container(),
-        Expanded(
-          child: Container(
-            padding: EdgeInsets.only(right: 40, top: 10, left: 10),
-            child: Text(registry.title,
-                overflow: TextOverflow.ellipsis, style: infoTextStyle),
-          ),
+      ),
+      registry.type == "video" && fileExists
+          ? Center(
+              child: Icon(Icons.play_arrow, size: 50),
+            )
+          : Container(),
+      Positioned.fill(
+        child: Container(
+          padding: EdgeInsets.only(right: 40, top: 10, left: 10),
+          child: Text(registry.title,
+              overflow: TextOverflow.ellipsis, style: infoTextStyle),
         ),
-        Positioned(
-          top: 10,
-          right: 10,
-          child: PopupMenuButton<String>(
-            child: Icon(
-              Icons.more_vert,
-              size: 18,
-              color: Colors.white,
+      ),
+      Positioned(
+        top: 10,
+        right: 10,
+        child: PopupMenuButton<String>(
+          child: Icon(
+            Icons.more_vert,
+            size: 18,
+            color: Colors.white,
+          ),
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              enabled: !isFromWsp && !fileExists,
+              value: 'download',
+              child: Text('Download'),
             ),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                enabled: !isFromWsp && !fileExists,
-                value: 'download',
-                child: Text('Download'),
-              ),
-              PopupMenuItem(
-                enabled: fileExists,
-                value: 'share',
-                child: Text('Share'),
-              ),
-              PopupMenuItem(
-                enabled: fileExists,
-                value: 'view',
-                child: Text('View'),
-              ),
-              PopupMenuItem(
-                enabled: !isFromWsp,
-                value: 'open',
-                child: Text('Open source url'),
-              ),
-            ],
-            onSelected: (value) => handleItemAction(registry, value),
-          ),
+            PopupMenuItem(
+              enabled: fileExists,
+              value: 'share',
+              child: Text('Share'),
+            ),
+            PopupMenuItem(
+              enabled: fileExists,
+              value: 'view',
+              child: Text('View'),
+            ),
+            PopupMenuItem(
+              enabled: !isFromWsp,
+              value: 'open',
+              child: Text('Open source url'),
+            ),
+          ],
+          onSelected: (value) => handleItemAction(registry, value),
         ),
-        Positioned(
-            bottom: 10,
-            left: 10,
-            child: Row(children: [
-              Image.network(
-                  CommonHelper().getWebpageFavicon(registry.webpageUrl),
-                  width: 14,
-                  height: 14),
-              SizedBox(width: 2),
-              Icon(
-                fileExists ? Icons.file_download : Icons.file_download,
-                size: 18,
-                color: fileExists ? Colors.green : Colors.red,
-              ),
-              SizedBox(width: 2),
-              Text(CommonHelper().formatDate(registry.downloadedAt),
-                  style: infoTextStyle)
-            ]))
-      ]),
-    );
+      ),
+      Positioned(
+          bottom: 10,
+          left: 10,
+          child: Row(children: [
+            Image.network(CommonHelper().getWebpageFavicon(registry.webpageUrl),
+                width: 14, height: 14),
+            SizedBox(width: 2),
+            Icon(
+              fileExists ? Icons.file_download : Icons.file_download,
+              size: 18,
+              color: fileExists ? Colors.green : Colors.red,
+            ),
+            SizedBox(width: 2),
+            Text(CommonHelper().formatDate(registry.downloadedAt),
+                style: infoTextStyle)
+          ]))
+    ]);
   }
 
   Widget buildListItem(DownloadRegistry registry, bool fileExists) {

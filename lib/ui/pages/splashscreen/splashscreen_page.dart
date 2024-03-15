@@ -39,8 +39,9 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
   Future initFS() async {
     var status = await Permission.storage.status;
     if (status.isPermanentlyDenied || status.isDenied) {
-      Map<Permission, PermissionStatus> statuses =
-          await [Permission.storage].request();
+      Map<Permission, PermissionStatus> statuses = await [
+        Permission.storage,
+      ].request();
       if (statuses[Permission.storage] == PermissionStatus.granted) {
         return;
       }

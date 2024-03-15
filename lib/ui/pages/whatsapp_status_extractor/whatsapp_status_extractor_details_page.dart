@@ -27,7 +27,6 @@ class _WhatsappStatusExtractorDetailsPageState
   void initState() {
     super.initState();
     ToastContext().init(context);
-    
   }
 
   void downloadFile() async {
@@ -58,7 +57,7 @@ class _WhatsappStatusExtractorDetailsPageState
                 "https://web.whatsapp.com/${widget.file.uri.pathSegments.last}",
             fileUrl: newFilePath,
             image: CommonHelper().getWebpageFavicon("https://web.whatsapp.com"),
-            type: isVideo ? 'video' : 'audio',
+            type: isVideo ? 'video' : 'image',
             downloadedAt: DateTime.now()));
       }
 
@@ -69,8 +68,6 @@ class _WhatsappStatusExtractorDetailsPageState
           duration: Toast.lengthLong, gravity: Toast.bottom);
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
