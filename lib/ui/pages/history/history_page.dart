@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:media_blade/get_controllers/download_history_controller.dart';
 import 'package:media_blade/ui/pages/history/history_element_details.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../models/download_registry.dart';
@@ -37,6 +38,9 @@ class _HistoryPageState extends State<HistoryPage> {
         break;
       case 'open':
         launchUrl(Uri.parse(registry.webpageUrl));
+        break;
+      case 'share':
+        Share.shareXFiles([XFile(registry.fileUrl)]);
         break;
     }
   }
@@ -88,6 +92,11 @@ class _HistoryPageState extends State<HistoryPage> {
               ),
               PopupMenuItem(
                 enabled: fileExists,
+                value: 'share',
+                child: Text('Share'),
+              ),
+              PopupMenuItem(
+                enabled: fileExists,
                 value: 'view',
                 child: Text('View'),
               ),
@@ -110,9 +119,9 @@ class _HistoryPageState extends State<HistoryPage> {
                   height: 14),
               SizedBox(width: 2),
               Icon(
-                fileExists ? Icons.file_download_done : Icons.file_download_off,
+                fileExists ? Icons.file_download : Icons.file_download,
                 size: 18,
-                color: fileExists ? Colors.green : null,
+                color: fileExists ? Colors.green : Colors.red,
               ),
               SizedBox(width: 2),
               Text(CommonHelper().formatDate(registry.downloadedAt),
