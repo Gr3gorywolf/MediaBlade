@@ -132,12 +132,9 @@ class _HistoryPageState extends State<HistoryPage> {
     }
     return buildListItemInfo(registry,
         fileExists: fileExists,
-        children: Image.file(
-          fileExists && registry.type == 'image'
-              ? File(registry.fileUrl)
-              : File.fromUri(Uri.parse(registry.image)),
-          fit: BoxFit.cover,
-        ));
+        children: fileExists && registry.type == 'image'
+            ? Image.file(File(registry.fileUrl), fit: BoxFit.cover)
+            : Image.network(registry.image, fit: BoxFit.cover));
   }
 
   @override
