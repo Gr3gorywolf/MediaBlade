@@ -116,7 +116,7 @@ class MainActivity: FlutterActivity() {
                 GlobalScope.launch {
                     try {
                         withContext(Dispatchers.IO) {
-                            YoutubeDL.getInstance().updateYoutubeDL(applicationContext)
+                            YoutubeDL.getInstance().updateYoutubeDL(applicationContext, YoutubeDL.UpdateChannel._NIGHTLY)
                             result.success("upgraded sucessfully")
                         }
                     } catch (e: Exception) {

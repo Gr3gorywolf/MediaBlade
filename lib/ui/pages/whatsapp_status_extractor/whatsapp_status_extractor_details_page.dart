@@ -1,13 +1,16 @@
 import 'dart:io';
-
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:toast/toast.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../models/download_registry.dart';
+import '../../../utils/common_helper.dart';
+import '../../../utils/download_history_helper.dart';
 import '../../../utils/file_system_helper.dart';
 import '../../../utils/settings_helper.dart';
+import '../../widgets/media_visualizer.dart';
 
 class WhatsappStatusExtractorDetailsPage extends StatefulWidget {
   final File file;
@@ -20,28 +23,11 @@ class WhatsappStatusExtractorDetailsPage extends StatefulWidget {
 
 class _WhatsappStatusExtractorDetailsPageState
     extends State<WhatsappStatusExtractorDetailsPage> {
-  late VideoPlayerController _controller;
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
   @override
   void initState() {
     super.initState();
     ToastContext().init(context);
-    _controller = VideoPlayerController.file(widget.file,
-        videoPlayerOptions: VideoPlayerOptions(
-            allowBackgroundPlayback: false, mixWithOthers: false))
-      ..initialize().then((_) {
-        // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
-        _controller.play();
-        _controller.setLooping(true);
-        setState(() {
-          _controller;
-        });
-      });
+    
   }
 
   void downloadFile() async {
@@ -55,13 +41,25 @@ class _WhatsappStatusExtractorDetailsPageState
     }
     try {
       var newFilePath = path + '/' + widget.file.uri.pathSegments.last;
+      var isVideo = widget.file.uri.toFilePath().contains('.mp4');
+      var lastModified = await widget.file.lastModified();
       if (!File(newFilePath).existsSync()) {
         await widget.file.copy(newFilePath);
-        if (widget.file.uri.toFilePath().contains('.mp4')) {
+        if (isVideo) {
           await GallerySaver.saveVideo(newFilePath);
         } else {
           await GallerySaver.saveImage(newFilePath);
         }
+        DownloadHistoryHelper.insertDownloadToHistory(DownloadRegistry(
+            title: "Whatsapp status ${CommonHelper().formatDate(lastModified)}",
+            downloadUrl:
+                "https://web.whatsapp.com/${widget.file.uri.pathSegments.last}",
+            webpageUrl:
+                "https://web.whatsapp.com/${widget.file.uri.pathSegments.last}",
+            fileUrl: newFilePath,
+            image: CommonHelper().getWebpageFavicon("https://web.whatsapp.com"),
+            type: isVideo ? 'video' : 'audio',
+            downloadedAt: DateTime.now()));
       }
 
       Toast.show("File downloaded!",
@@ -72,46 +70,13 @@ class _WhatsappStatusExtractorDetailsPageState
     }
   }
 
-  void handleVideoTap() {
-    if (_controller.value.isPlaying) {
-      _controller.pause();
-    } else {
-      _controller.play();
-    }
-    setState(() {
-      _controller;
-    });
-  }
 
-  Widget buildBody() {
-    if (widget.file.uri.toFilePath().contains('.mp4')) {
-      return GestureDetector(
-        onTap: () => handleVideoTap(),
-        child: Stack(children: [
-          Center(
-            child: AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller)),
-          ),
-          !_controller.value.isPlaying
-              ? Center(
-                  child: Icon(Icons.play_arrow, size: 50),
-                )
-              : Container()
-        ]),
-      );
-    }
-
-    return Center(
-      child: Image.file(widget.file),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Status details")),
-      body: buildBody(),
+      body: MediaVisualizer(file: widget.file),
       backgroundColor: Colors.black,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => downloadFile(),

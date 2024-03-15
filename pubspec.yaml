@@ -39,6 +39,9 @@ dependencies:
   filesystem_picker: ^3.1.0
   url_launcher: ^6.1.6
   package_info_plus: ^3.0.1
+  json_store: ^2.0.1
+  intl: 0.18.1
+  get: ^4.0.0
   flutter:
     sdk: flutter
 

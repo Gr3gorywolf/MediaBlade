@@ -5,6 +5,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:get/get.dart';
+import 'package:media_blade/get_controllers/download_history_controller.dart';
 import 'package:media_blade/ui/pages/main/main_page.dart';
 import 'package:media_blade/ui/pages/splashscreen/splashscreen_page.dart';
 import 'package:media_blade/utils/ytdl_helper.dart';
@@ -41,7 +43,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    super.initState(); 
+    super.initState();
   }
 
   @override
@@ -70,7 +72,9 @@ class _MyAppState extends State<MyApp> {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    final DownloadHistoryController historyController =
+        Get.put(DownloadHistoryController());
+    return GetMaterialApp(
       title: 'MediaBlade',
       theme: ThemeData(
         highlightColor: Colors.white,

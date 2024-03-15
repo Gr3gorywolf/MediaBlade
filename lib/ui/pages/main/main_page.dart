@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:media_blade/ui/dialogs/download_dialog.dart';
+import 'package:media_blade/ui/pages/history/history_page.dart';
 import 'package:media_blade/ui/pages/home/home_page.dart';
 import 'package:media_blade/ui/pages/settings/settings_page.dart';
 import 'package:media_blade/ui/pages/tools/tools_page.dart';
@@ -39,7 +40,12 @@ class _MainPageState extends State<MainPage> {
     retrieveUrl();
   }
 
-  List<Widget> routes = [HomePage(), ToolsPage(), SettingsPage()];
+  List<Widget> routes = [
+    HomePage(),
+    HistoryPage(),
+    ToolsPage(),
+    SettingsPage()
+  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,10 +55,15 @@ class _MainPageState extends State<MainPage> {
           backgroundColor: Colors.blue,
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white54,
+          type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
               label: "Home",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history),
+              label: "History",
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.handyman),

@@ -6,6 +6,8 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:media_blade/utils/assets_helper.dart';
+import 'package:media_blade/utils/download_history_helper.dart';
+import 'package:media_blade/utils/file_system_helper.dart';
 import 'package:media_blade/utils/ytdl_helper.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:toast/toast.dart';
@@ -49,6 +51,8 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
     WidgetsFlutterBinding.ensureInitialized();
     await FlutterDownloader.initialize(debug: true);
     await initFS();
+    await FileSystemHelper.createAppFolder();
+    await DownloadHistoryHelper.initHistory();
     YtdlHelper.init();
   }
 

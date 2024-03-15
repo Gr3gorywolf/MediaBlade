@@ -33,7 +33,6 @@ class YtdlHelper {
     }
   }
 
-
   static Future<void> upgradeYTDL() async {
     try {
       var result = await _platform.invokeMethod('upgrade');
@@ -42,6 +41,7 @@ class YtdlHelper {
       throw Exception("Failed to upgrade YTDL");
     }
   }
+
   static Future<String?> getIntentUrl() async {
     try {
       var result = await _platform.invokeMethod('getIntentUrl');

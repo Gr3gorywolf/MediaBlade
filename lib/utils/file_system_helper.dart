@@ -3,8 +3,21 @@ import 'dart:io';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:media_blade/constants/common_constants.dart';
 
 class FileSystemHelper {
+  static Future<bool> createAppFolder() async {
+    try {
+      var appDirectory = Directory(app_directory_url);
+      if (!appDirectory.existsSync()) {
+        await appDirectory.create();
+      }
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
   static Future<String?> requestNewPath(BuildContext context) {
     return FilesystemPicker.open(
       title: 'Select a folder for downloads',

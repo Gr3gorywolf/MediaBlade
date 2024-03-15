@@ -1,13 +1,15 @@
 import 'dart:io';
-
+import 'package:path/path.dart' as CustomPath;
 import 'package:animate_do/animate_do.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:media_blade/models/download_registry.dart';
 import 'package:media_blade/models/enums/media_types.dart';
 import 'package:media_blade/models/media_results.dart';
 import 'package:media_blade/utils/common_helper.dart';
+import 'package:media_blade/utils/download_history_helper.dart';
 import 'package:media_blade/utils/file_system_helper.dart';
 import 'package:media_blade/utils/settings_helper.dart';
 import 'package:media_blade/utils/ytdl_helper.dart';
@@ -84,9 +86,10 @@ class _DownloadDialogState extends State<DownloadDialog> {
   }
 
   void startDownload(Formats format) async {
-    var title = results?.title ?? "";
+    var normalizedTitle =
+        CommonHelper().normalizeFilename(results?.title ?? "");
     var extension = results?.ext ?? "";
-    var hash = CommonHelper().createHash(results?.url ?? "");
+    var hash = CommonHelper().createHash(results?.webpageUrl ?? "");
     var path = await SettingsHelper.getSetting(SettingKey.downloadPath);
     if (path == null) {
       path = await FileSystemHelper.requestNewPath(context);
@@ -99,16 +102,24 @@ class _DownloadDialogState extends State<DownloadDialog> {
         await SettingsHelper.getSetting(SettingKey.closeIfIntent) == 'true' ??
             false;
     try {
+      var fileName = "$normalizedTitle-$hash.$extension";
       FlutterDownloader.enqueue(
         url: format.url ?? '',
         savedDir: path,
         saveInPublicStorage: true,
-        fileName: "$title-$hash.$extension",
+        fileName: fileName,
         showNotification: true,
         openFileFromNotification: true,
       );
       Toast.show("Download started");
-      print({closeIfIntent, widget.fromIntent});
+      DownloadHistoryHelper.insertDownloadToHistory(DownloadRegistry(
+          title: results?.title ?? "",
+          downloadUrl: results?.webpageUrl ?? '',
+          webpageUrl: results?.webpageUrl ?? '',
+          fileUrl: CustomPath.join(path, fileName),
+          image: results?.thumbnail ?? '',
+          type: getFormatType(format).name,
+          downloadedAt: DateTime.now()));
       if (closeIfIntent && widget.fromIntent) {
         await SystemChannels.platform.invokeMethod('SystemNavigator.pop');
       }
