@@ -25,13 +25,13 @@ jobs:
       with:
         java-version: '12.x'
     - name: Load Google Service file
-      run: echo ${{ secrets.GOOGLE_SERVICES_JSON }} | base64 -di > ./android/app/google-services.json
+      run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > $GITHUB_WORKSPACE/android/app/google-services.json
     - name: Write keystore
-      run: mkdir ./keys && echo ${{ secrets.KEYSTORE }} | base64 -di > ./keys/gr3.keystore
+      run: mkdir $GITHUB_WORKSPACE/keys && echo "${{ secrets.KEYSTORE }}" | base64 --decode > $GITHUB_WORKSPACE/keys/gr3.keystore
     - name: Write keystore properties file
-      run: echo ${{ secrets.KEY_PROPERTIES }} | base64 -di > ./android/key.properties
+      run: echo "${{ secrets.KEY_PROPERTIES }}" > $GITHUB_WORKSPACE/android/key.properties
     - name: Write build number
-      run: echo "v1.0.0-${{ github.run_number }}"  > ./assets/data/release-number.txt
+      run: echo "v1.0.0-${{ github.run_number }}"  > $GITHUB_WORKSPACE/assets/data/release-number.txt
     - uses: subosito/flutter-action@v1
       with:
         flutter-version: '3.3.5'
