@@ -27,19 +27,19 @@ jobs:
     - name: Load Google Service file
       env:
         DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
-      run: echo $DATA | base64 -di > /home/runner/work/MediaBlade/MediaBlade/android/app/google-services.json
+      run: echo $DATA | base64 -di > ./android/app/google-services.json
     - name: Write keystore
       env:
         DATA: ${{ secrets.KEYSTORE }}
-      run: mkdir /home/runner/work/MediaBlade/MediaBlade/keys && echo $DATA | base64 -di > /home/runner/work/MediaBlade/MediaBlade/keys/gr3.keystore
+      run: mkdir ./keys && echo $DATA | base64 -di > ./keys/gr3.keystore
     - name: Write keystore properties file
       env:
         DATA: ${{ secrets.KEY_PROPERTIES }}
-      run: echo $DATA | base64 -di > /home/runner/work/MediaBlade/MediaBlade/android/key.properties
+      run: echo $DATA | base64 -di > ./android/key.properties
     - name: Write build number
       env:
         DATA: v1.0.0-${{ github.run_number }}
-      run: echo $DATA  > /home/runner/work/MediaBlade/MediaBlade/assets/data/release-number.txt
+      run: echo $DATA  > ./assets/data/release-number.txt
     - uses: subosito/flutter-action@v1
       with:
         flutter-version: '3.3.5'
