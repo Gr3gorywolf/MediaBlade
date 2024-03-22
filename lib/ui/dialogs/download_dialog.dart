@@ -16,6 +16,7 @@ import 'package:media_blade/utils/ytdl_helper.dart';
 import 'package:toast/toast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../constants/common_constants.dart';
 import '../../utils/auth_helper.dart';
 import '../../utils/google_drive_helper.dart';
 
@@ -42,8 +43,6 @@ class _DownloadDialogState extends State<DownloadDialog> {
   MediaResults? results;
   int selectedTab = 0;
   var mappedFormats = Map<String, List<Formats>>();
-
-  get media_type_icons => null;
 
   MediaTypes getFormatType(Formats format) {
     if (format.acodec == 'none' && format.vcodec == 'none') {
