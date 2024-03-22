@@ -8,6 +8,7 @@ import 'package:media_blade/constants/common_constants.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../get_controllers/download_history_controller.dart';
 import '../../../models/download_registry.dart';
 import '../../../utils/common_helper.dart';
 import '../../dialogs/download_dialog.dart';
@@ -17,6 +18,7 @@ import 'history_element_details.dart';
 class HistoryElement extends StatefulWidget {
   DownloadRegistry registry;
   bool fileExists;
+
   HistoryElement({required this.registry, required this.fileExists, super.key});
 
   @override
@@ -24,6 +26,7 @@ class HistoryElement extends StatefulWidget {
 }
 
 class _HistoryElementState extends State<HistoryElement> {
+  DownloadHistoryController downloadHistoryController = Get.find();
   get isPlayableKind {
     return ['audio', 'video'].contains(widget.registry.type);
   }
@@ -34,11 +37,15 @@ class _HistoryElementState extends State<HistoryElement> {
         DownloadDialog.show(context, widget.registry.downloadUrl);
         break;
       case 'view':
-        Get.to(() => HistoryElementDetailsPage(
-            File.fromUri(Uri.parse(widget.registry.fileUrl))));
+        Get.to(() => HistoryElementDetailsPage(widget.registry));
         break;
       case 'open':
         launchUrl(Uri.parse(widget.registry.downloadUrl));
+        break;
+      case 'delete':
+        var file = File(widget.registry.fileUrl);
+        file.deleteSync();
+        downloadHistoryController.downloadHistory.refresh();
         break;
       case 'share':
         Share.shareXFiles([XFile(widget.registry.fileUrl)]);
@@ -111,6 +118,11 @@ class _HistoryElementState extends State<HistoryElement> {
               enabled: !isFromWsp,
               value: 'open',
               child: Text('Open source url'),
+            ),
+            PopupMenuItem(
+              enabled: fileExists,
+              value: 'delete',
+              child: Text('Delete file'),
             ),
           ],
           onSelected: (value) => handleItemAction(value),

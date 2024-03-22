@@ -11,7 +11,9 @@ import '../../widgets/media_visualizer.dart';
 
 class WhatsappStatusExtractorDetailsPage extends StatefulWidget {
   final File file;
-  WhatsappStatusExtractorDetailsPage(this.file, {Key? key}) : super(key: key);
+  final String mediaType;
+  WhatsappStatusExtractorDetailsPage(this.file, this.mediaType, {Key? key})
+      : super(key: key);
 
   @override
   State<WhatsappStatusExtractorDetailsPage> createState() =>
@@ -68,12 +70,15 @@ class _WhatsappStatusExtractorDetailsPageState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Status details")),
-      body: MediaVisualizer(file: widget.file),
+      body: MediaVisualizer(file: widget.file, mediaType: widget.mediaType),
       backgroundColor: Colors.black,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => downloadFile(),
-        label: Text("Download"),
-        icon: Icon(Icons.download),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: FloatingActionButton.extended(
+          onPressed: () => downloadFile(),
+          label: Text("Download"),
+          icon: Icon(Icons.download),
+        ),
       ),
     );
   }

@@ -11,6 +11,8 @@ import 'package:media_blade/ui/pages/main/main_page.dart';
 import 'package:media_blade/ui/pages/splashscreen/splashscreen_page.dart';
 import 'package:media_blade/utils/ytdl_helper.dart';
 
+import 'get_controllers/updates_controller.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -33,7 +35,10 @@ class _MyAppState extends State<MyApp> {
       DownloadTaskStatus status = data[1];
       int progress = data[2];
       final DownloadHistoryController historyController = Get.find();
-      setState(() {});
+      print(data);
+      if (status == DownloadTaskStatus.complete) {
+        historyController.downloadHistory.refresh();
+      }
     });
 
     FlutterDownloader.registerCallback(downloadCallback);
@@ -75,6 +80,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     final DownloadHistoryController historyController =
         Get.put(DownloadHistoryController());
+    final UpdatesController updates = Get.put(UpdatesController());
     return GetMaterialApp(
       title: 'MediaBlade',
       theme: ThemeData(

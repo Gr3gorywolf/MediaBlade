@@ -23,9 +23,14 @@ class HistoryPage extends StatefulWidget {
 class _HistoryPageState extends State<HistoryPage> {
   DownloadHistoryController downloadHistoryController = Get.find();
   List<DownloadRegistry> get history {
-    var historyList = downloadHistoryController.downloadHistory.values.toList();
+    var historyList =
+        downloadHistoryController.downloadHistory.value.values.toList();
     historyList.sort((a, b) => b.downloadedAt.compareTo(a.downloadedAt));
     return historyList;
+  }
+
+  refreshHistory() {
+    downloadHistoryController.downloadHistory.refresh();
   }
 
   @override
@@ -34,30 +39,38 @@ class _HistoryPageState extends State<HistoryPage> {
         appBar: AppBar(
           title: Text("Download history"),
         ),
-        body: GridView.count(
-          crossAxisCount: 2,
-          childAspectRatio: 9 / 11,
-          children: List.generate(
-            history.length,
-            (index) {
-              var registry = history[index];
-              var fileExists = File(registry.fileUrl).existsSync();
-              return InkWell(
-                  onTap: () => {
-                        if (fileExists)
-                          {
-                            Get.to(() => HistoryElementDetailsPage(
-                                File.fromUri(Uri.parse(registry.fileUrl))))
-                          }
-                      },
-                  child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: HistoryElement(
-                              fileExists: fileExists, registry: registry))));
+        body: RefreshIndicator(
+            onRefresh: () async {
+              await Future.delayed(const Duration(milliseconds: 500));
+              downloadHistoryController.downloadHistory.refresh();
             },
-          ),
-        ));
+            child: GridView.count(
+              crossAxisCount: 2,
+              childAspectRatio: 9 / 11,
+              children: List.generate(
+                history.length,
+                (index) {
+                  return Obx(() {
+                    var registry = history[index];
+                    var fileExists = File(registry.fileUrl).existsSync();
+                    return InkWell(
+                        onTap: () => {
+                              if (fileExists)
+                                {
+                                  Get.to(
+                                      () => HistoryElementDetailsPage(registry))
+                                }
+                            },
+                        child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: HistoryElement(
+                                    fileExists: fileExists,
+                                    registry: registry))));
+                  });
+                },
+              ),
+            )));
   }
 }

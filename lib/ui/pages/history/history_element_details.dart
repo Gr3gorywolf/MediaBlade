@@ -13,14 +13,16 @@ import '../../../utils/settings_helper.dart';
 import '../../widgets/media_visualizer.dart';
 
 class HistoryElementDetailsPage extends StatelessWidget {
-  final File file;
-  HistoryElementDetailsPage(this.file, {Key? key}) : super(key: key);
+  DownloadRegistry registry;
+  HistoryElementDetailsPage(this.registry, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    var file = File.fromUri(Uri.parse(registry.fileUrl));
     return Scaffold(
       appBar: AppBar(title: Text("Media details")),
-      body: MediaVisualizer(file: file),
+      body: MediaVisualizer(
+          file: file, mediaType: registry.type, imageUrl: registry.image),
       backgroundColor: Colors.black,
     );
   }

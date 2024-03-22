@@ -44,9 +44,10 @@ dependencies:
   path_provider: ^2.0.12
   url_launcher: ^6.1.6
   package_info_plus: ^3.0.1
+  dio: ^5.4.1
   json_store:
     git:
-      url: https://github.com/Gr3gorywolf/flutter_json_store_no_secure_store.git
+      url: https://github.com/Gr3gorywolf/mediablade_flutter_json_store.git
       ref: master
   share_plus: 6.3.4
   intl: 0.18.1
@@ -84,6 +85,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/data/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

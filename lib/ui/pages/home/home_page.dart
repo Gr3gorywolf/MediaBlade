@@ -5,7 +5,10 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:media_blade/get_controllers/download_history_controller.dart';
+import 'package:media_blade/get_controllers/updates_controller.dart';
 import 'package:media_blade/ui/dialogs/download_dialog.dart';
+import 'package:media_blade/utils/alerts_helper.dart';
+import 'package:media_blade/utils/updates_helper.dart';
 import 'package:toast/toast.dart';
 
 import '../../../utils/assets_helper.dart';

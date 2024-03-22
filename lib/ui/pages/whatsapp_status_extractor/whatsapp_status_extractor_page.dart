@@ -96,10 +96,12 @@ class _WhatsappStatusExtractorPageState
   }
 
   void goToDetails(File file) async {
+    var mediaType = file.uri.toFilePath().contains('.mp4') ? 'video' : 'image';
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => WhatsappStatusExtractorDetailsPage(file)));
+            builder: (context) =>
+                WhatsappStatusExtractorDetailsPage(file, mediaType)));
   }
 
   Widget buildImage(File file) {

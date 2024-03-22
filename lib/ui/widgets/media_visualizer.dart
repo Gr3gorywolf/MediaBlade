@@ -5,7 +5,10 @@ import 'package:video_player/video_player.dart';
 
 class MediaVisualizer extends StatefulWidget {
   File file;
-  MediaVisualizer({super.key, required this.file});
+  String mediaType;
+  String? imageUrl;
+  MediaVisualizer(
+      {super.key, required this.file, required this.mediaType, this.imageUrl});
 
   @override
   State<MediaVisualizer> createState() => _MediaVisualizerState();
@@ -48,26 +51,43 @@ class _MediaVisualizerState extends State<MediaVisualizer> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.file.uri.toFilePath().contains('.mp4')) {
-      return GestureDetector(
-        onTap: () => handleVideoTap(),
-        child: Stack(children: [
-          Center(
-            child: AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller)),
-          ),
-          !_controller.value.isPlaying
+    //Video media type
+    if (['video', 'audio'].contains(widget.mediaType)) {
+      return Stack(children: [
+        GestureDetector(
+          onTap: handleVideoTap,
+          child: widget.mediaType == 'video'
               ? Center(
-                  child: Icon(Icons.play_arrow, size: 50),
+                  child: AspectRatio(
+                      aspectRatio: _controller.value.aspectRatio,
+                      child: VideoPlayer(_controller)),
                 )
-              : Container()
-        ]),
+              : Center(
+                  child: Image.network(
+                  widget.imageUrl ?? '',
+                  fit: BoxFit.cover,
+                )),
+        ),
+        !_controller.value.isPlaying
+            ? Center(
+                child: IconButton(
+                    onPressed: handleVideoTap,
+                    icon: Icon(Icons.play_arrow, size: 50)),
+              )
+            : Container(),
+        Positioned(
+            bottom: 17,
+            width: MediaQuery.of(context).size.width,
+            child: VideoProgressIndicator(_controller,
+                colors: VideoProgressColors(playedColor: Colors.white),
+                allowScrubbing: true)),
+      ]);
+    }
+    if (widget.mediaType == 'image') {
+      return Center(
+        child: Image.file(widget.file),
       );
     }
-
-    return Center(
-      child: Image.file(widget.file),
-    );
+    return Container();
   }
 }
