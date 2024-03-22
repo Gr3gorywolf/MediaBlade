@@ -31,7 +31,7 @@ jobs:
     - name: Write keystore
       env:
         DATA: ${{ secrets.KEYSTORE }}
-      run: echo $DATA | base64 -di > keys/gr3.keystore
+      run: mkdir keys && echo $DATA | base64 -di > keys/gr3.keystore
     - name: Write keystore properties file
       env:
         DATA: ${{ secrets.KEY_PROPERTIES }}
