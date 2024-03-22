@@ -14,6 +14,8 @@
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:extractNativeLibs="true"
+        android:hasFragileUserData="true"
+        android:allowBackup="true"
         android:requestLegacyExternalStorage="true">
         <provider
           android:name="vn.hunghd.flutterdownloader.DownloadedFileProvider"

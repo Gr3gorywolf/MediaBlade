@@ -1,10 +1,7 @@
 import 'dart:io';
-import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:toast/toast.dart';
-import 'package:video_player/video_player.dart';
-
 import '../../../models/download_registry.dart';
 import '../../../utils/common_helper.dart';
 import '../../../utils/download_history_helper.dart';
@@ -52,8 +49,6 @@ class _WhatsappStatusExtractorDetailsPageState
         DownloadHistoryHelper.insertDownloadToHistory(DownloadRegistry(
             title: "Whatsapp status ${CommonHelper().formatDate(lastModified)}",
             downloadUrl:
-                "https://web.whatsapp.com/${widget.file.uri.pathSegments.last}",
-            webpageUrl:
                 "https://web.whatsapp.com/${widget.file.uri.pathSegments.last}",
             fileUrl: newFilePath,
             image: CommonHelper().getWebpageFavicon("https://web.whatsapp.com"),

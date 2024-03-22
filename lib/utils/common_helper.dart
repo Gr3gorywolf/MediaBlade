@@ -47,4 +47,14 @@ class CommonHelper {
         .toString()
         .substring(0, maxLength);
   }
+
+  Map<String, String> convertMap(Map<String, dynamic> originalMap) {
+    Map<String, String> convertedMap = {};
+    originalMap.forEach((key, value) {
+      String stringValue = value?.toString() ?? '';
+      convertedMap[key] = stringValue;
+    });
+
+    return convertedMap;
+  }
 }

@@ -8,9 +8,13 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:media_blade/utils/assets_helper.dart';
 import 'package:media_blade/utils/download_history_helper.dart';
 import 'package:media_blade/utils/file_system_helper.dart';
+import 'package:media_blade/utils/settings_helper.dart';
 import 'package:media_blade/utils/ytdl_helper.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:toast/toast.dart';
+
+import '../../../utils/auth_helper.dart';
+import '../../../utils/google_drive_helper.dart';
 
 class SplashScreenPage extends StatefulWidget {
   final Function? onFullFilled;
@@ -21,6 +25,7 @@ class SplashScreenPage extends StatefulWidget {
 }
 
 class _SplashScreenPageState extends State<SplashScreenPage> {
+  var status = "Loading app";
   void initState() {
     super.initState();
     ToastContext().init(context);
@@ -39,9 +44,8 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
   Future initFS() async {
     var status = await Permission.storage.status;
     if (status.isPermanentlyDenied || status.isDenied) {
-      Map<Permission, PermissionStatus> statuses = await [
-        Permission.storage,
-      ].request();
+      Map<Permission, PermissionStatus> statuses =
+          await [Permission.storage].request();
       if (statuses[Permission.storage] == PermissionStatus.granted) {
         return;
       }
@@ -51,9 +55,19 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
   Future initPlugins() async {
     WidgetsFlutterBinding.ensureInitialized();
     await FlutterDownloader.initialize(debug: true);
+    await SettingsHelper.initSettings();
+    setState(() {
+      status = "Initializing file system";
+    });
     await initFS();
     await FileSystemHelper.createAppFolder();
+    setState(() {
+      status = "Syncing history";
+    });
     await DownloadHistoryHelper.initHistory();
+    setState(() {
+      status = "Initializing scrappers";
+    });
     YtdlHelper.init();
   }
 
@@ -63,7 +77,16 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
         body: Center(
             child: FadeIn(
       duration: Duration(milliseconds: 2000),
-      child: AssetsHelper.getIcon("katana", size: 250),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AssetsHelper.getIcon("katana", size: 250),
+          SizedBox(
+            height: 10,
+          ),
+          Text(status, style: TextStyle(color: Colors.blue))
+        ],
+      ),
     )));
   }
 }

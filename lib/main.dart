@@ -32,6 +32,7 @@ class _MyAppState extends State<MyApp> {
       String id = data[0];
       DownloadTaskStatus status = data[1];
       int progress = data[2];
+      final DownloadHistoryController historyController = Get.find();
       setState(() {});
     });
 

@@ -16,6 +16,9 @@ import 'package:media_blade/utils/ytdl_helper.dart';
 import 'package:toast/toast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../utils/auth_helper.dart';
+import '../../utils/google_drive_helper.dart';
+
 class DownloadDialog extends StatefulWidget {
   final String? url;
   final bool fromIntent;
@@ -39,11 +42,8 @@ class _DownloadDialogState extends State<DownloadDialog> {
   MediaResults? results;
   int selectedTab = 0;
   var mappedFormats = Map<String, List<Formats>>();
-  Map<String, IconData> icons = {
-    'video': Icons.video_collection_rounded,
-    'audio': Icons.audiotrack,
-    'image': Icons.image,
-  };
+
+  get media_type_icons => null;
 
   MediaTypes getFormatType(Formats format) {
     if (format.acodec == 'none' && format.vcodec == 'none') {
@@ -91,6 +91,7 @@ class _DownloadDialogState extends State<DownloadDialog> {
     var extension = results?.ext ?? "";
     var hash = CommonHelper().createHash(results?.webpageUrl ?? "");
     var path = await SettingsHelper.getSetting(SettingKey.downloadPath);
+    var type = getFormatType(format).name;
     if (path == null) {
       path = await FileSystemHelper.requestNewPath(context);
       await SettingsHelper.setSetting(SettingKey.downloadPath, path);
@@ -102,7 +103,12 @@ class _DownloadDialogState extends State<DownloadDialog> {
         await SettingsHelper.getSetting(SettingKey.closeIfIntent) == 'true' ??
             false;
     try {
-      var fileName = "$normalizedTitle-$hash.$extension";
+      var fileName = "$normalizedTitle-$hash-$type.$extension";
+      var futureFile = File(CustomPath.join(path, fileName));
+      if (futureFile.existsSync()) {
+        await futureFile.delete();
+      }
+
       FlutterDownloader.enqueue(
         url: format.url ?? '',
         savedDir: path,
@@ -112,10 +118,9 @@ class _DownloadDialogState extends State<DownloadDialog> {
         openFileFromNotification: true,
       );
       Toast.show("Download started");
-      DownloadHistoryHelper.insertDownloadToHistory(DownloadRegistry(
+      await DownloadHistoryHelper.insertDownloadToHistory(DownloadRegistry(
           title: results?.title ?? "",
           downloadUrl: results?.webpageUrl ?? '',
-          webpageUrl: results?.webpageUrl ?? '',
           fileUrl: CustomPath.join(path, fileName),
           image: results?.thumbnail ?? '',
           type: getFormatType(format).name,
@@ -130,7 +135,6 @@ class _DownloadDialogState extends State<DownloadDialog> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     ToastContext().init(context);
     fetchResults();
@@ -183,7 +187,7 @@ class _DownloadDialogState extends State<DownloadDialog> {
               },
               tabs: mappedFormats.keys.map((e) {
                 return Tab(
-                  icon: Icon(icons[e]),
+                  icon: Icon(media_type_icons[e]),
                 );
               }).toList(),
             ))
@@ -209,7 +213,7 @@ class _DownloadDialogState extends State<DownloadDialog> {
             size = format.filesize ?? 0;
           }
           var formattedSize = CommonHelper().formatBytes(size, 2);
-          var icon = icons[selectedMediaType];
+          var icon = media_type_icons[selectedMediaType];
           return ListTile(
             leading: Icon(icon ?? Icons.abc, color: Colors.white, size: 40),
             title: Text(

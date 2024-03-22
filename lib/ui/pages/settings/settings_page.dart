@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:googleapis/drive/v3.dart';
+import 'package:media_blade/utils/auth_helper.dart';
 import 'package:media_blade/utils/file_system_helper.dart';
+import 'package:media_blade/utils/google_drive_helper.dart';
 import 'package:media_blade/utils/settings_helper.dart';
 import 'package:media_blade/utils/ytdl_helper.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -19,6 +23,7 @@ class _SettingsPageState extends State<SettingsPage> {
   var downloadUrl = "";
   var version = "";
   var isUpgrading = false;
+  var isSyncing = false;
   var closeIfIntentEnabled = false;
 
   var titleTextStyle = TextStyle(color: Colors.white, fontSize: 12);
@@ -71,6 +76,23 @@ class _SettingsPageState extends State<SettingsPage> {
         SettingKey.closeIfIntent, newVal.toString());
     setState(() {
       closeIfIntentEnabled = newVal;
+    });
+  }
+
+  void handleStartBackup() async {
+    setState(() {
+      isSyncing = true;
+    });
+    var auth = await AuthHelper.signInWithGoogle();
+    if (auth != null) {
+      var googleDrive = await GoogleDriveClient.create(auth);
+      if (googleDrive != null) {
+        await googleDrive.syncHistory();
+      }
+    }
+
+    setState(() {
+      isSyncing = false;
     });
   }
 
@@ -154,6 +176,30 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               subtitle: Text(
                 "Upgrades the extractor to the latest version",
+                style: subTitleTextStyle,
+              ),
+            ),
+            Divider(
+              height: 2,
+              color: Colors.white24,
+            ),
+            ListTile(
+              onTap: () {
+                handleStartBackup();
+              },
+              leading: isSyncing
+                  ? CircularProgressIndicator()
+                  : Icon(
+                      Icons.backup,
+                      size: 35,
+                      color: Colors.white,
+                    ),
+              title: Text(
+                "Sync history to drive",
+                style: titleTextStyle,
+              ),
+              subtitle: Text(
+                "Syncs the download history to your personal google drive account",
                 style: subTitleTextStyle,
               ),
             ),
