@@ -28,6 +28,14 @@ jobs:
       env:
         DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
       run: echo $DATA | base64 -di > android/app/google-services.json
+    - name: Write keystore
+      env:
+        DATA: ${{ secrets.KEYSTORE }}
+      run: echo $DATA | base64 -di > keys/gr3.keystore
+    - name: Write keystore properties file
+      env:
+        DATA: ${{ secrets.KEY_PROPERTIES }}
+      run: echo $DATA | base64 -di > android/key.properties
     - name: Write build number
       env:
         DATA: v1.0.0-${{ github.run_number }}

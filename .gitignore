@@ -30,6 +30,7 @@ google-services.json
 .packages
 .pub-cache/
 .pub/
+/keys
 /build/
 
 # Symbolication related
