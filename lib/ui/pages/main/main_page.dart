@@ -52,7 +52,7 @@ class _MainPageState extends State<MainPage> {
     if (newRelease != null) {
       // ignore: use_build_context_synchronously
       AlertsHelper.showAlertDialog(context, "New update available",
-          "There's a new update available with the following changes:\n ${newRelease.body ?? newRelease.name}",
+          "There's a new update available with the following changes:\n${newRelease.body ?? newRelease.name}",
           buttons: [
             TextButton(
                 onPressed: () {

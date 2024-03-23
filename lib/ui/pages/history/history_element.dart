@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:media_blade/constants/common_constants.dart';
 import 'package:share_plus/share_plus.dart';
@@ -27,6 +25,7 @@ class HistoryElement extends StatefulWidget {
 
 class _HistoryElementState extends State<HistoryElement> {
   DownloadHistoryController downloadHistoryController = Get.find();
+
   get isPlayableKind {
     return ['audio', 'video'].contains(widget.registry.type);
   }
@@ -59,8 +58,6 @@ class _HistoryElementState extends State<HistoryElement> {
       color: Colors.white,
       fontSize: 12,
     );
-    var isFromWsp = widget.registry.image ==
-        CommonHelper().getWebpageFavicon("https://web.whatsapp.com");
     return Stack(fit: StackFit.expand, children: [
       children,
       Positioned.fill(
@@ -70,13 +67,13 @@ class _HistoryElementState extends State<HistoryElement> {
         ),
       ),
       isPlayableKind && fileExists
-          ? Center(
+          ? const Center(
               child: Icon(Icons.play_arrow, size: 50),
             )
           : Container(),
       Positioned.fill(
         child: Container(
-          padding: EdgeInsets.only(right: 40, top: 10, left: 27),
+          padding: const EdgeInsets.only(right: 40, top: 10, left: 27),
           child: Text(widget.registry.title,
               overflow: TextOverflow.ellipsis, style: infoTextStyle),
         ),
@@ -93,37 +90,38 @@ class _HistoryElementState extends State<HistoryElement> {
         top: 10,
         right: 10,
         child: PopupMenuButton<String>(
-          child: Icon(
+          child: const Icon(
             Icons.more_vert,
             size: 18,
             color: Colors.white,
           ),
           itemBuilder: (context) => [
-            PopupMenuItem(
-              enabled: !isFromWsp && !fileExists,
-              value: 'download',
-              child: Text('Download'),
-            ),
-            PopupMenuItem(
-              enabled: fileExists,
-              value: 'share',
-              child: Text('Share'),
-            ),
-            PopupMenuItem(
-              enabled: fileExists,
-              value: 'view',
-              child: Text('View'),
-            ),
-            PopupMenuItem(
-              enabled: !isFromWsp,
-              value: 'open',
-              child: Text('Open source url'),
-            ),
-            PopupMenuItem(
-              enabled: fileExists,
-              value: 'delete',
-              child: Text('Delete file'),
-            ),
+            if (!widget.registry.isFromWhatsapp && !fileExists)
+              const PopupMenuItem(
+                value: 'download',
+                child: Text('Download'),
+              ),
+            if (fileExists)
+              PopupMenuItem(
+                enabled: fileExists,
+                value: 'share',
+                child: const Text('Share'),
+              ),
+            if (fileExists)
+              const PopupMenuItem(
+                value: 'view',
+                child: Text('View'),
+              ),
+            if (!widget.registry.isFromWhatsapp)
+              const PopupMenuItem(
+                value: 'open',
+                child: Text('Open source url'),
+              ),
+            if (fileExists)
+              const PopupMenuItem(
+                value: 'delete',
+                child: Text('Delete file'),
+              ),
           ],
           onSelected: (value) => handleItemAction(value),
         ),
@@ -137,12 +135,12 @@ class _HistoryElementState extends State<HistoryElement> {
               size: 14,
               color: fileExists ? Colors.green : Colors.red,
             ),
-            SizedBox(width: 2),
+            const SizedBox(width: 2),
             Icon(
               media_type_icons[widget.registry.type],
               size: 13,
             ),
-            SizedBox(width: 2),
+            const SizedBox(width: 2),
             Text(CommonHelper().formatDate(widget.registry.downloadedAt),
                 style: infoTextStyle)
           ]))

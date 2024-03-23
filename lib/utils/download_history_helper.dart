@@ -67,6 +67,14 @@ class DownloadHistoryHelper {
     }
   }
 
+  static Future<void> insertDeleteDownloadFromRegistry(
+      DownloadRegistry registry) async {
+    var itemKey = "download-registry-${registry.id}-${registry.type}";
+    await jsonStore.deleteItem(itemKey);
+    final DownloadHistoryController c = Get.find();
+    c.deleteRegistry(registry);
+  }
+
   static Future<void> insertDownloadToHistory(DownloadRegistry registry) async {
     var itemKey = "download-registry-${registry.id}-${registry.type}";
     var oldItem = await jsonStore.getItem(itemKey);

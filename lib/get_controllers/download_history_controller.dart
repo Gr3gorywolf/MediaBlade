@@ -14,6 +14,10 @@ class DownloadHistoryController extends GetxController {
     }
   }
 
+  deleteRegistry(DownloadRegistry registry) {
+    downloadHistory.remove(_composeRegistryKey(registry));
+  }
+
   setRegistry(DownloadRegistry newRegistry) {
     downloadHistory[_composeRegistryKey(newRegistry)] = newRegistry;
   }

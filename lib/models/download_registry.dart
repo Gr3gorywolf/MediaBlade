@@ -11,6 +11,11 @@ class DownloadRegistry {
     return _perDevicePaths[SettingsHelper.deviceId] ?? '';
   }
 
+  bool get isFromWhatsapp {
+    return image ==
+        CommonHelper().getWebpageFavicon("https://web.whatsapp.com");
+  }
+
   set fileUrl(String newFileUrl) {
     _perDevicePaths[SettingsHelper.deviceId] = newFileUrl;
   }

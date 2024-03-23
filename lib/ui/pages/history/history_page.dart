@@ -23,8 +23,10 @@ class HistoryPage extends StatefulWidget {
 class _HistoryPageState extends State<HistoryPage> {
   DownloadHistoryController downloadHistoryController = Get.find();
   List<DownloadRegistry> get history {
-    var historyList =
-        downloadHistoryController.downloadHistory.value.values.toList();
+    var historyList = downloadHistoryController.downloadHistory.value.values
+        .where((registry) {
+      return !(registry.isFromWhatsapp && registry.fileUrl.isEmpty);
+    }).toList();
     historyList.sort((a, b) => b.downloadedAt.compareTo(a.downloadedAt));
     return historyList;
   }
