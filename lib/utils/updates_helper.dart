@@ -11,7 +11,7 @@ class UpdatesHelper {
       var data = GithubRelease.fromJson(res.data.first);
       var currentRelease =
           await AssetsHelper.getText('release-number', extension: '.txt');
-      if (data.name != currentRelease) {
+      if (!currentRelease.toString().contains(data.name ?? '')) {
         return data;
       }
       return null;
